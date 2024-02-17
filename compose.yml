@@ -1,0 +1,66 @@
+services:
+  novinvajeh:
+    build:
+      context: .
+      dockerfile: ./docker/mediawiki/Dockerfile
+      target: mediawiki_run_stage
+      args:
+        - MEDIA_WIKI_VERSION=1.39
+        - INSTANCE_BUILD=novinvajeh
+    container_name: novinvajeh
+    ports:
+      - "8000:80"
+    environment:
+      - MEDIAWIKI_DB_TYPE=${NOVINVAJEH_DB_TYPE}
+      - MEDIAWIKI_DB_HOST=${NOVINVAJEH_DB_HOST}
+      - MEDIAWIKI_DB_PORT=${NOVINVAJEH_DB_PORT}
+      - MEDIAWIKI_DB_NAME=${NOVINVAJEH_DB_NAME}
+      - MEDIAWIKI_DB_USER=${NOVINVAJEH_DB_USER}
+      - MEDIAWIKI_DB_PASSWORD=${NOVINVAJEH_DB_PASSWORD}
+    volumes:
+      - ./backups/novinvajeh:/backups
+      - novinvajeh_medias:/var/www/html/mediafiles
+      - ./public/novinvajeh:/var/www/html/public
+      - ./settings/novinvajeh/LocalSettings.php:/var/www/html/LocalSettings.php
+    depends_on:
+      - db
+    networks:
+      - brdgnet
+
+  db:
+    build:
+      context: ./docker/mariadb
+      dockerfile: Dockerfile
+      target: mariadb_run_stage
+      args:
+        - MARIADB_VERSION=11.2
+    container_name: novinvajeh_db
+    env_file:
+      - .env
+    volumes:
+      - ./backups:/backups
+      - novinvajeh_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - brdgnet
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: novinvajeh_admin
+    ports:
+      - 8001:80
+    env_file:
+      - .env
+
+    networks:
+      - brdgnet
+
+networks:
+  brdgnet:
+    driver: bridge
+
+volumes:
+  # Define an external volume named novinvajeh_medias
+  novinvajeh_medias: {}
+  # Define an external volume named novinvajeh_data
+  novinvajeh_data: {}

@@ -1,0 +1,14 @@
+{
+  "require": {
+    "mediawiki/universal-language-selector": "~2022.10"
+  },
+  "extra": {
+    "merge-plugin": {
+      "include": [
+        "composer.*.json",
+        "extensions/*/composer.json",
+        "skins/*/composer.json"
+      ]
+    }
+  }
+}
